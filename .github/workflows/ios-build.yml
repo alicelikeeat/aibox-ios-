@@ -52,7 +52,7 @@ jobs:
             echo 'Expected unsigned app'; exit 1
           fi
           cd build/ipa
-          zip -qry "../AiBox-0.1.0-${{ github.run_number }}-unsigned.ipa" Payload
+          zip -qry "../AiBox-0.1.1-${{ github.run_number }}-unsigned.ipa" Payload
       - uses: actions/upload-artifact@v4
         with:
           name: AiBox-unsigned-ipa
@@ -92,4 +92,4 @@ jobs:
           验证：核心测试、模拟器编辑测试与设备归档通过；未进行真机验证。
           签名类型：未签名，需自行签名后安装。
           EOFNOTES
-          gh release create "v0.1.0-build.${{ github.run_number }}" dist/*.ipa --target "${{ github.sha }}" --title "AiBox 0.1.0 build ${{ github.run_number }}（未签名）" --notes-file release-notes.md --prerelease
+          gh release create "v0.1.1-build.${{ github.run_number }}" dist/*.ipa --target "${{ github.sha }}" --title "AiBox 0.1.1 build ${{ github.run_number }}（未签名）" --notes-file release-notes.md --prerelease

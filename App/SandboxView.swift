@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct SandboxView: View {
     @StateObject private var model = SandboxModel()
     @State private var importing = false
+    @State private var photoImporting = false
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -26,7 +27,10 @@ struct SandboxView: View {
                         .font(.caption).padding(8).background(.ultraThinMaterial).padding(8)
                 }
             }
-            Text(model.status).font(.caption).padding(8).frame(maxWidth: .infinity)
+            HStack {
+                if model.busy { ProgressView() }
+                Text(model.status).font(.caption)
+            }.padding(8).frame(maxWidth: .infinity)
             if !model.playing {
                 VStack {
                     HStack {
@@ -44,7 +48,12 @@ struct SandboxView: View {
                             .textFieldStyle(.roundedBorder)
                     }
                     if ["图片", "GIF", "视频"].contains(model.tool) {
-                        Button(model.importedAsset == nil ? "导入媒体" : "重新导入媒体") { importing = true }
+                        HStack {
+                            Button("从相册导入") { photoImporting = true }
+                            Button("从文件导入") { importing = true }
+                        }
+                        Text(model.importedAsset == nil ? "视频最多 256 MiB；图片/GIF 最多 32 MiB" : "已导入媒体，请预览后确认")
+                            .font(.caption)
                     }
                     HStack {
                         if model.pending != nil {
@@ -65,9 +74,14 @@ struct SandboxView: View {
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: importTypes) { result in
             switch result {
-            case .success(let url): model.importFile(url)
-            case .failure(let error): model.error = error.localizedDescription
+            case .success(let url): Task { await model.importFile(url) }
+            case .failure(let error):
+                if (error as NSError).code != NSUserCancelledError { model.error = error.localizedDescription }
             }
+        }
+        .sheet(isPresented: $photoImporting) {
+            MediaPhotoPicker(kind: model.importKind, onPick: model.importPhoto,
+                             onDismiss: { photoImporting = false })
         }
         .alert("AiBox", isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
             Button("知道了") { model.error = nil }
@@ -75,7 +89,7 @@ struct SandboxView: View {
     }
 
     private var importTypes: [UTType] {
-        model.tool == "视频" ? [.movie] : model.tool == "GIF" ? [.gif] : [.image]
+        model.tool == "视频" ? [.movie, .video] : model.tool == "GIF" ? [.gif] : [.image]
     }
     private var joystick: some View {
         Circle().fill(.ultraThinMaterial).frame(width: 110, height: 110)

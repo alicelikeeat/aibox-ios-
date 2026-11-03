@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 import AiBoxCore
 
 @MainActor
@@ -115,20 +116,56 @@ final class SandboxModel: ObservableObject {
         busy = false
     }
 
-    func importFile(_ url: URL) {
+    var importKind: LocalMediaImport.Kind { tool == "视频" ? .video : tool == "GIF" ? .gif : .image }
+
+    func beginImport() {
+        busy = true
+        status = "正在读取媒体，云端文件可能需要下载…"
+        cancel()
+    }
+    func importFile(_ url: URL) async {
+        let kind = importKind, root = root
+        beginImport()
         do {
-            let granted = url.startAccessingSecurityScopedResource()
-            defer { if granted { url.stopAccessingSecurityScopedResource() } }
-            let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? Int.max
-            guard size <= 32 * 1024 * 1024 else { throw SandboxError.message("原型仅支持 32 MiB 以内媒体。") }
-            let folder = root.appendingPathComponent("Media", isDirectory: true)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            let name = UUID().uuidString + "." + url.pathExtension.lowercased()
-            try FileManager.default.copyItem(at: url, to: folder.appendingPathComponent(name))
-            importedAsset = name
-            cancel()
-            status = "媒体已导入，请预览后确认"
-        } catch { self.error = error.localizedDescription }
+            let local = try await Task.detached { try LocalMediaImport.copy(url, into: root, kind: kind) }.value
+            await finishImport(local, kind: kind)
+        } catch { failImport(error) }
+    }
+    func importPhoto(_ provider: NSItemProvider) {
+        let kind = importKind, root = root
+        let type = kind == .video ? UTType.movie.identifier : UTType.image.identifier
+        beginImport()
+        provider.loadFileRepresentation(forTypeIdentifier: type) { [weak self] url, error in
+            // NSItemProvider deletes its temporary URL when this callback returns.
+            let copied: Result<URL, Error> = Result {
+                if let error { throw error }
+                guard let url else { throw LocalMediaImport.Failure.unreadable }
+                return try LocalMediaImport.copy(url, into: root, kind: kind)
+            }
+            Task { @MainActor in
+                guard let self else { return }
+                switch copied {
+                case .success(let local): await self.finishImport(local, kind: kind)
+                case .failure(let error): self.failImport(error)
+                }
+            }
+        }
+    }
+    private func finishImport(_ local: URL, kind: LocalMediaImport.Kind) async {
+        do {
+            try await LocalMediaImport.validate(local, kind: kind)
+            importedAsset = local.lastPathComponent
+            status = "媒体已导入，请点击预览编辑，再确认编辑"
+            busy = false
+        } catch {
+            try? FileManager.default.removeItem(at: local)
+            failImport(error)
+        }
+    }
+    private func failImport(_ error: Error) {
+        busy = false
+        status = "导入失败，可重新选择媒体"
+        self.error = "导入失败：\(error.localizedDescription)"
     }
 
     func tick(_ delta: Double) {

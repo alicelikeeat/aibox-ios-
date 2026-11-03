@@ -49,3 +49,13 @@ The publication workflow repeats core tests, simulator build/UI test and device
 archive, checks the app is unsigned, packages Payload/AiBox.app and publishes a
 Chinese-noted GitHub prerelease only after these steps succeed. No installability
 or iPhone test claim is made.
+
+## Media import repair — 0.1.1
+
+Code inspection found no Photos picker, a uniform 32 MiB limit and unknown file
+size treated as Int.max (false oversize failure). Added system Photos picker,
+coordinated streaming copies with actual byte limits and format/playability
+validation. Provider temporary URLs are copied inside the callback, before expiry.
+Added iOS regression tests for GIF/image decode, valid generated H.264 video,
+wrong formats, oversize rejection and cleanup. Cloud results must be checked
+before claiming these tests pass. No iCloud/physical-device verification yet.

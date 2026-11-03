@@ -19,11 +19,13 @@ groups = []
 for name, directory, product_type in [('AiBox', 'App', 'application'), ('AiBoxUITests', 'UITests', 'bundle.ui-testing')]:
     files = []
     builds = []
-    for file in sorted((root / directory).glob('*.swift')):
+    source_files = sorted((root / directory).glob('*.swift'))
+    if name == 'AiBoxUITests': source_files.append(root / 'App/LocalMediaImport.swift')
+    for file in source_files:
         ref = add(str(file.relative_to(root)), 'isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = '+quote(str(file.relative_to(root)))+'; sourceTree = "<group>";')
         files.append(ref)
-        builds.append(add('build:'+str(file.relative_to(root)), f'isa = PBXBuildFile; fileRef = {ref};'))
-    groups.extend(files)
+        builds.append(add('build:'+name+':'+str(file.relative_to(root)), f'isa = PBXBuildFile; fileRef = {ref};'))
+    groups.extend(ref for ref in files if ref not in groups)
     product = add(name+':product', f'isa = PBXFileReference; explicitFileType = {"wrapper.application" if name == "AiBox" else "wrapper.cfbundle"}; path = {name}{".app" if name == "AiBox" else ".xctest"}; sourceTree = BUILT_PRODUCTS_DIR;')
     products.append(product)
     sources = add(name+':sources', f'isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = {refs(builds)}; runOnlyForDeploymentPostprocessing = 0;')
@@ -35,7 +37,7 @@ for name, directory, product_type in [('AiBox', 'App', 'application'), ('AiBoxUI
     frameworks = add(name+':frameworks', f'isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = {refs(frameworks_files) if frameworks_files else "()"}; runOnlyForDeploymentPostprocessing = 0;')
     configs = []
     for config in ['Debug', 'Release']:
-        settings = {'PRODUCT_NAME': '$(TARGET_NAME)', 'PRODUCT_BUNDLE_IDENTIFIER': 'com.alicelikeeat.aibox' + ('.uitests' if name != 'AiBox' else ''), 'GENERATE_INFOPLIST_FILE':'YES', 'CODE_SIGN_STYLE':'Automatic', 'TARGETED_DEVICE_FAMILY':'1,2', 'SWIFT_VERSION':'5.0', 'IPHONEOS_DEPLOYMENT_TARGET':'16.0', 'CURRENT_PROJECT_VERSION':'1', 'MARKETING_VERSION':'0.1.0'}
+        settings = {'PRODUCT_NAME': '$(TARGET_NAME)', 'PRODUCT_BUNDLE_IDENTIFIER': 'com.alicelikeeat.aibox' + ('.uitests' if name != 'AiBox' else ''), 'GENERATE_INFOPLIST_FILE':'YES', 'CODE_SIGN_STYLE':'Automatic', 'TARGETED_DEVICE_FAMILY':'1,2', 'SWIFT_VERSION':'5.0', 'IPHONEOS_DEPLOYMENT_TARGET':'16.0', 'CURRENT_PROJECT_VERSION':'1', 'MARKETING_VERSION':'0.1.1'}
         if name == 'AiBox':
             settings.update({'INFOPLIST_KEY_CFBundleDisplayName':'AiBox', 'INFOPLIST_KEY_UILaunchScreen_Generation':'YES', 'INFOPLIST_KEY_UIApplicationSceneManifest_Generation':'YES', 'INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone':'UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight', 'INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad':'UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown'})
         else:

@@ -19,7 +19,7 @@ Choose a simulator actually installed on your Mac; CI selects an available iPhon
 - Tap ground to select a grid cell; one-finger drag orbits, two fingers pan,
   pinch zooms. Grid markers cover a window around the camera in a 256×256 world.
 - Choose block, erase, image, GIF, video, text, number or SF Symbol icon.
-- Import local files (up to 32 MiB); files are copied into Application Support.
+- Import from Photos or Files (videos up to 256 MiB; images/GIF up to 32 MiB). Files are copied into Application Support and validated before binding.
 - Preview changes the displayed candidate only. Confirm commits one transaction;
   cancel discards it. Undo/redo operate on committed snapshots, up to 50 entries.
 - Save writes only the confirmed world atomically. Startup loads that save.
