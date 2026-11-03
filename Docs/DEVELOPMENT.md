@@ -50,10 +50,10 @@ Choose a simulator actually installed on your Mac; CI selects an available iPhon
 
 `core-tests.yml` runs core XCTest on macOS. `ios-build.yml` builds and runs an
 editor smoke UI test in an iPhone simulator, then creates an **unsigned device
-archive** and uploads build logs, xcresult and archive artifacts.
+archive** and uploads build logs, xcresult, archive and unsigned IPA artifacts.
 
 An unsigned archive is not an installable IPA. Signed distribution still needs
 an Apple developer team, matching bundle identifier, signing certificate and
 provisioning profile (or configured Xcode Cloud signing). These are not present
 in this workspace. No credentials are committed, no release is published and
-main is not merged. The simulator smoke test does not replace iPhone testing.
+main publication is now authorized by the user. A successful main push builds and publishes a prerelease with an unsigned IPA and Chinese release notes. The simulator smoke test does not replace iPhone testing.
