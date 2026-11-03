@@ -34,3 +34,18 @@ active arm64 architecture. Set Debug `ONLY_ACTIVE_ARCH = YES`, matching the
 package, and rerun. No device archive was produced in this failed attempt.
 Also bounded the file read before JSON decoding, and strengthened the UI test
 with isolated storage and object-count assertions across preview, undo and reload.
+
+### Validated app source
+
+Commit `a92f797`: core run 41603273517 succeeded (13 XCTest methods).
+iOS run https://github.com/alicelikeeat/aibox-ios-/actions/runs/41603273649
+succeeded on Xcode 16.4: simulator app compiled, one editor smoke UI test passed
+with zero failures, and the unsigned iOS device archive succeeded. The test
+checks committed object counts through preview/cancel/confirm/undo/redo/save and
+relaunch. This does not test media playback correctness or physical hardware.
+
+The user subsequently authorized publication from main as an unsigned IPA.
+The publication workflow repeats core tests, simulator build/UI test and device
+archive, checks the app is unsigned, packages Payload/AiBox.app and publishes a
+Chinese-noted GitHub prerelease only after these steps succeed. No installability
+or iPhone test claim is made.
