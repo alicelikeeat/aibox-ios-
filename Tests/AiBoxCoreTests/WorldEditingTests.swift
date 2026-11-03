@@ -19,7 +19,7 @@ final class WorldEditingTests: XCTestCase {
     }
 
     func testBatchIsAtomicOnFailure() throws {
-        var editor = try WorldEditor()
+        let editor = try WorldEditor()
         let object = WorldObject(anchor: GridPosition(x: 0, z: 0),
                                  transform: WorldTransform(x: 0, z: 0))
         let edit = WorldEdit(operations: [.place(object), .remove(UUID())])
