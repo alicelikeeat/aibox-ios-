@@ -24,3 +24,13 @@
 - Cloud compilation and simulator outcomes must be recorded from the new
   workflow run before treating this stage as validated.
 - No physical iPhone or signed IPA validation has been performed.
+
+### First app CI attempt
+
+Commit `3fcc9a7`: core run 41602966422 succeeded (13 XCTest methods).
+iOS run 41602966495 failed before UI execution: the generated app Debug target
+requested both simulator architectures while the local package built only the
+active arm64 architecture. Set Debug `ONLY_ACTIVE_ARCH = YES`, matching the
+package, and rerun. No device archive was produced in this failed attempt.
+Also bounded the file read before JSON decoding, and strengthened the UI test
+with isolated storage and object-count assertions across preview, undo and reload.

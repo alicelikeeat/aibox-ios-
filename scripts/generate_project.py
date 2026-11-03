@@ -51,7 +51,7 @@ productgroup = add('products', f'isa = PBXGroup; name = Products; children = {re
 main = add('main', f'isa = PBXGroup; children = {refs(groups+[productgroup])}; sourceTree = "<group>";')
 configs = []
 for config in ['Debug', 'Release']:
-    configs.append(add('project:'+config, f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{SDKROOT = iphoneos; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "{"-Onone" if config == "Debug" else "-O"}"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; '+('ENABLE_TESTABILITY = YES; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;' if config == 'Debug' else '')+'};'))
+    configs.append(add('project:'+config, f'isa = XCBuildConfiguration; name = {config}; buildSettings = {{SDKROOT = iphoneos; CLANG_ENABLE_MODULES = YES; SWIFT_OPTIMIZATION_LEVEL = "{"-Onone" if config == "Debug" else "-O"}"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; '+('ENABLE_TESTABILITY = YES; ONLY_ACTIVE_ARCH = YES; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;' if config == 'Debug' else '')+'};'))
 configlist = add('project:configs', f'isa = XCConfigurationList; buildConfigurations = {refs(configs)}; defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
 add('project', f'isa = PBXProject; attributes = {{BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600;}}; buildConfigurationList = {configlist}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en, Base); mainGroup = {main}; productRefGroup = {productgroup}; projectDirPath = ""; projectRoot = ""; targets = {refs([ident("AiBox:target"), ident("AiBoxUITests:target")])}; packageReferences = {refs([ident("package")])};')
 project = '// !$*UTF8*$!\n{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {\n'

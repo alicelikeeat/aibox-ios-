@@ -35,7 +35,12 @@ public actor AiBoxWorldStore {
 
     public func load() throws -> AiBoxWorld? {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return nil }
-        return try AiBoxWorldCodec.decode(Data(contentsOf: fileURL))
+        let handle = try FileHandle(forReadingFrom: fileURL)
+        defer { try? handle.close() }
+        // Bound the read itself, rather than allocating an arbitrarily large file
+        // before the codec can apply its size limit.
+        let data = try handle.read(upToCount: AiBoxWorldCodec.maximumBytes + 1) ?? Data()
+        return try AiBoxWorldCodec.decode(data)
     }
 
     public func save(_ world: AiBoxWorld) throws {

@@ -31,6 +31,7 @@ struct SandboxView: View {
                 VStack {
                     HStack {
                         Text("格子 \(model.selected.x), \(model.selected.z)")
+                        Text("对象 \(model.editor.world.objects.count)").accessibilityIdentifier("worldCount")
                         Spacer()
                         Button("撤销", action: model.undo)
                         Button("重做", action: model.redo)

@@ -33,6 +33,11 @@ final class NavigationAndStoreTests: XCTestCase {
         XCTAssertEqual(loaded?.objects, [object])
         try Data("invalid".utf8).write(to: url)
         do { _ = try await store.load(); XCTFail("Corruption must surface") } catch { }
+        try Data(repeating: 32, count: AiBoxWorldCodec.maximumBytes + 1).write(to: url)
+        do {
+            _ = try await store.load()
+            XCTFail("Oversized files must be rejected")
+        } catch { XCTAssertEqual(error as? WorldStoreError, .oversized) }
     }
 
     func testStalePreviewAndNewEditClearsRedo() throws {

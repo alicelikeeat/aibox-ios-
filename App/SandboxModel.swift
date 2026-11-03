@@ -26,8 +26,16 @@ final class SandboxModel: ObservableObject {
     private let store: AiBoxWorldStore
 
     init() {
-        root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        var folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("AiBox", isDirectory: true)
+        #if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--uitest-world"), arguments.indices.contains(index + 1),
+           let id = UUID(uuidString: arguments[index + 1]) {
+            folder = folder.appendingPathComponent("UITests-" + id.uuidString, isDirectory: true)
+        }
+        #endif
+        root = folder
         store = AiBoxWorldStore(fileURL: root.appendingPathComponent("world.json"))
     }
 
