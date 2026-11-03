@@ -53,11 +53,14 @@ final class MediaImportTests: XCTestCase {
         if let address = CVPixelBufferGetBaseAddress(pixel) { memset(address, 0, CVPixelBufferGetDataSize(pixel)) }
         CVPixelBufferUnlockBaseAddress(pixel, [])
         for frame in 0..<3 {
-            var attempts = 0
-            while !input.isReadyForMoreMediaData && attempts < 100 {
-                try await Task.sleep(nanoseconds: 10_000_000); attempts += 1
+            let deadline = Date().addingTimeInterval(30)
+            while !input.isReadyForMoreMediaData && writer.status == .writing && Date() < deadline {
+                try await Task.sleep(nanoseconds: 50_000_000)
             }
-            XCTAssertTrue(input.isReadyForMoreMediaData)
+            guard input.isReadyForMoreMediaData else {
+                throw writer.error ?? NSError(domain: "MediaFixture", code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Video encoder did not become ready; status \(writer.status.rawValue)"])
+            }
             XCTAssertTrue(adaptor.append(pixel, withPresentationTime: CMTime(value: Int64(frame), timescale: 10)))
         }
         input.markAsFinished()
